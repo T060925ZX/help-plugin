@@ -55,7 +55,7 @@ body {
 .container {
     width: 930px;
     padding: 30px 25px 20px 25px;
-    background-color: rgba(245, 246, 251, var(--container-bg-opacity, 1));
+    background-color: transparent;
 }
 
 .head_box {
@@ -92,7 +92,7 @@ body {
     margin-top: 25px;
     margin-bottom: 15px;
     padding: 25px 10px 10px 10px;
-    background: #fff;
+    background: rgba(255, 255, 255, var(--container-bg-opacity, 1));
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
     position: relative;
 }
