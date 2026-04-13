@@ -291,7 +291,7 @@ const renderHelpImage = async () => {
         // 在 CSS 开头添加背景图片变量和降低容器透明度
         const bgVarStyle = `:root { 
     --background-image: url('${cfg.background_image_url}');
-    --container-bg-opacity: 0.6;
+    --container-bg-opacity: 0.7;
 }
 `;
         finalCss = bgVarStyle + finalCss;
@@ -367,7 +367,8 @@ export class HelpPlugin extends plugin {
                 { reg: '^(#|/)?(刷新|重载)帮助$', fnc: 'refreshHelp' },
                 { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp' },
                 { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp' },
-                { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp' }
+                { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp' },
+                { reg: '^(#|/)?切换主题\\s*(.+)$', fnc: 'switchTheme' }
             ]
         });
         this.autoCheckUpdate();
@@ -643,6 +644,62 @@ export class HelpPlugin extends plugin {
                 "💡 请检查网络连接和 Git 配置\n" +
                 "📦 备份文件仍保留，可手动恢复"
             );
+        }
+        
+        return true;
+    }
+
+    /**
+     * 切换主题
+     */
+    async switchTheme(e) {
+        const themeName = e.msg.match(/^(#|\/)?切换主题\s*(.+)$/)[2].trim();
+        
+        if (!themeName) {
+            await e.reply("❌ 请指定主题名称，例如：#切换主题 default");
+            return true;
+        }
+        
+        // 检查主题目录是否存在
+        const themeDir = path.join(THEME_PATH, themeName);
+        if (!fs.existsSync(themeDir)) {
+            await e.reply(`❌ 主题 "${themeName}" 不存在！\n可用主题：default, none, demo, cute`);
+            return true;
+        }
+        
+        try {
+            await e.reply(`🎨 正在切换到主题 "${themeName}"...`);
+            
+            // 读取当前配置
+            let config = {};
+            if (fs.existsSync(CONFIG_FILE_PATH)) {
+                config = yaml.parse(fs.readFileSync(CONFIG_FILE_PATH, 'utf8'));
+            }
+            
+            // 更新主题配置
+            config.themes = themeName;
+            
+            // 保存配置
+            fs.writeFileSync(CONFIG_FILE_PATH, yaml.stringify(config), 'utf8');
+            logger.mark(`[Help-Plugin] 主题已切换为: ${themeName}`);
+            
+            await e.reply("✨ 主题配置已更新，正在生成新图片...");
+            
+            // 重新渲染帮助图片
+            const result = await renderHelpImage();
+            
+            if (result) {
+                await e.reply([
+                    `✅ 主题已切换为 "${themeName}"`,
+                    segment.image(result)
+                ]);
+            } else {
+                await e.reply("❌ 图片生成失败，请检查控制台报错信息。");
+            }
+            
+        } catch (error) {
+            logger.error('[Help-Plugin] 切换主题失败:', error);
+            await e.reply(`❌ 切换主题失败：${error.message}`);
         }
         
         return true;
