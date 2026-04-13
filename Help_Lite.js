@@ -325,8 +325,8 @@ const renderHelpImage = async () => {
     
     copyThemeFiles(themeDir, tempThemeDir);
     
-    // 替换 HTML 中的相对路径为临时目录路径（用于字体、图片等资源）
-    let processedHtml = finalHtml.replace(/url\(['"]?\.\/([^'")]+)['"]?/g, `url('file://${tempThemeDir}/$1')`);
+    // 替换 HTML 中的相对路径为临时目录路径
+    let processedHtml = finalHtml.replace(/\.\//g, `file://${tempThemeDir}/`);
     
     // 创建临时 HTML 文件
     const tempHtmlPath = path.join(TEMP_DIR, 'help_temp.html');
