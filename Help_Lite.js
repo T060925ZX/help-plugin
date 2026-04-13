@@ -55,11 +55,10 @@ class ResourceManager {
     }
 
     initConfig() {
-        // 检查默认配置是否存在
+        // 检查默认配置是否存在，不存在则创建
         const defaultConfigPath = path.join(DEFAULT_CONFIG_PATH, 'config.yaml');
         const defaultHelpPath = path.join(DEFAULT_CONFIG_PATH, 'help.yaml');
         
-        // 如果默认配置不存在，创建它们
         if (!fs.existsSync(defaultConfigPath)) {
             const defaultCfg = {
                 main_title: 'YUNZAI BOT',
