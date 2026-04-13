@@ -293,6 +293,9 @@ const renderHelpImage = async () => {
     --background-image: url('${cfg.background_image_url}');
     --container-bg-opacity: 0.6;
 }
+.head_box {
+    background: rgba(255, 255, 255, 0.8) !important;
+}
 `;
         finalCss = bgVarStyle + finalCss;
     }
