@@ -315,9 +315,10 @@ export class HelpPlugin extends plugin {
             priority: 5,
             rule: [
                 { reg: '^(#|/)?(帮助|菜单|help)$', fnc: 'showHelp' },
-                { reg: '^(#|/)?(刷新|重载|重置)帮助$', fnc: 'refreshHelp' },
+                { reg: '^(#|/)?(刷新|重载)帮助$', fnc: 'refreshHelp' },
                 { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp' },
-                { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp' }
+                { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp' },
+                { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp' }
             ]
         });
         this.autoCheckUpdate();
@@ -483,6 +484,116 @@ export class HelpPlugin extends plugin {
         } catch (error) {
             console.error('[Help-Plugin] 同步过程中出现错误:', error);
             await e.reply(`❌ 同步失败：${error.message}\n请检查喵喵插件是否正确安装。`);
+        }
+        
+        return true;
+    }
+
+    /**
+     * 重置帮助插件（备份并重新拉取）
+     */
+    async resetHelp(e) {
+        await e.reply("🔄 开始重置帮助插件...");
+        
+        try {
+            const backupPath = path.join(_path, 'resources', 'help-plugin-bak');
+            const timestamp = Date.now();
+            const finalBackupPath = `${backupPath}_${timestamp}`;
+            
+            // 步骤 1: 备份现有目录
+            if (fs.existsSync(RES_PATH)) {
+                await e.reply("📦 正在备份现有资源...");
+                console.log(`[Help-Plugin] 正在备份 ${RES_PATH} 到 ${finalBackupPath}`);
+                
+                // 递归复制目录
+                const copyDir = (src, dest) => {
+                    if (!fs.existsSync(dest)) {
+                        fs.mkdirSync(dest, { recursive: true });
+                    }
+                    
+                    const entries = fs.readdirSync(src, { withFileTypes: true });
+                    
+                    for (const entry of entries) {
+                        const srcPath = path.join(src, entry.name);
+                        const destPath = path.join(dest, entry.name);
+                        
+                        if (entry.isDirectory()) {
+                            copyDir(srcPath, destPath);
+                        } else {
+                            fs.copyFileSync(srcPath, destPath);
+                        }
+                    }
+                };
+                
+                copyDir(RES_PATH, finalBackupPath);
+                console.log(`[Help-Plugin] 备份完成: ${finalBackupPath}`);
+                await e.reply(`✅ 备份完成`);
+            } else {
+                await e.reply("⚠️ 未发现现有资源目录，跳过备份步骤");
+            }
+            
+            // 步骤 2: 删除现有目录
+            await e.reply("🗑️ 正在清理旧文件...");
+            if (fs.existsSync(RES_PATH)) {
+                fs.rmSync(RES_PATH, { recursive: true, force: true });
+                console.log(`[Help-Plugin] 已删除旧目录: ${RES_PATH}`);
+            }
+            
+            // 步骤 3: 重新克隆仓库
+            await e.reply("📥 正在重新克隆仓库...");
+            
+            // 检测网络环境
+            const isGlobal = this.isGlobal ? this.isGlobal() : (() => {
+                try {
+                    const cmd = process.platform === 'win32' ? 'ping -n 1 -w 2000 google.com' : 'ping -c 1 -W 2 google.com';
+                    execSync(cmd, { stdio: 'ignore' });
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            })();
+            
+            const repoUrl = isGlobal 
+                ? 'https://github.com/T060925ZX/help-plugin.git' 
+                : 'https://gitcode.com/T060925ZX/help-plugin.git';
+            
+            console.log(`[Help-Plugin] 检测到网络环境: ${isGlobal ? '海外' : '国内'}, 正在克隆...`);
+            await e.reply(`🌐 使用源: ${isGlobal ? 'GitHub' : 'GitCode'}`);
+            
+            execSync(`git clone --depth=1 ${repoUrl} ${RES_PATH}`, { stdio: 'inherit' });
+            
+            console.log(`[Help-Plugin] 克隆成功: ${RES_PATH}`);
+            await e.reply("✅ 仓库克隆成功！");
+            
+            // 步骤 4: 复制 Help_Lite.js 到 plugins/example/
+            await e.reply("📋 正在复制插件文件...");
+            const sourceFile = path.join(RES_PATH, 'Help_Lite.js');
+            const targetDir = path.join(_path, 'plugins', 'example');
+            const targetFile = path.join(targetDir, 'Help_Lite.js');
+            
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+            
+            if (fs.existsSync(sourceFile)) {
+                fs.copyFileSync(sourceFile, targetFile);
+                console.log(`[Help-Plugin] 文件已复制到: ${targetFile}`);
+            }
+            
+            await e.reply(
+                "✅ 帮助插件重置成功！\n" +
+                `📦 备份位置: ${finalBackupPath}\n` +
+                "🔄 请重启 Bot 以应用更改\n" +
+                "💡 如需恢复，可从备份目录手动还原"
+            );
+            
+        } catch (error) {
+            console.error('[Help-Plugin] 重置失败:', error);
+            await e.reply(
+                `❌ 重置失败：${error.message}\n` +
+                "💡 请检查网络连接和 Git 配置\n" +
+                "📦 备份文件仍保留，可手动恢复"
+            );
         }
         
         return true;
