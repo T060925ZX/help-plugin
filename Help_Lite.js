@@ -288,8 +288,12 @@ const renderHelpImage = async () => {
     // 处理背景图片 - 将 URL 注入到 CSS 中
     let finalCss = cssContent;
     if (hasBg) {
-        // 在 CSS 开头添加背景图片变量
-        const bgVarStyle = `:root { --background-image: url('${cfg.background_image_url}'); }\n`;
+        // 在 CSS 开头添加背景图片变量和降低容器透明度
+        const bgVarStyle = `:root { 
+    --background-image: url('${cfg.background_image_url}');
+    --container-bg-opacity: 0.6;
+}
+`;
         finalCss = bgVarStyle + finalCss;
     }
     

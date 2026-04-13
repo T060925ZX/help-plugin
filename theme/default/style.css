@@ -1,7 +1,7 @@
 /* 主题变量 - 浅色模式 */
 :root {
     --bg-color: #f4f7f9;
-    --container-bg: rgba(255, 255, 255, 0.95);
+    --container-bg: rgba(255, 255, 255, var(--container-bg-opacity, 0.95));
     --container-bg-blur: rgba(255, 255, 255, 0.7);
     --border-color: rgba(255, 255, 255, 0.5);
     --text-primary: #1e293b;
@@ -19,7 +19,7 @@
 /* 深色模式 */
 [data-theme="dark"] {
     --bg-color: #0f172a;
-    --container-bg: rgba(32, 38, 48, 0.95);
+    --container-bg: rgba(32, 38, 48, var(--container-bg-opacity, 0.95));
     --container-bg-blur: rgba(15, 23, 42, 0.75);
     --border-color: rgba(255, 255, 255, 0.1);
     --text-primary: #f8fafc;

@@ -129,12 +129,22 @@ background_image_url: 'https://example.com/background.jpg'
 - **本地路径**: `file:///path/to/image.jpg`
 - **Base64**: `data:image/png;base64,...`
 
+### 自动透明度调整
+
+当检测到有背景图片时，系统会**自动降低容器透明度**至 60%，让背景图更明显：
+
+- **无背景图**：容器透明度 95%（默认）
+- **有背景图**：容器透明度 60%（自动调整）
+
+如需自定义透明度，可以修改主题 CSS 中的 `--container-bg-opacity` 变量。
+
 ### 工作原理
 
 1. 系统检测到 `background_image_url` 配置后
 2. 自动将 URL 注入到 CSS 的 `:root` 变量中
-3. CSS 中的 `var(--background-image, none)` 会自动使用该值
-4. 背景图片会应用以下样式：
+3. 同时注入 `--container-bg-opacity: 0.6` 降低透明度
+4. CSS 中的 `var(--background-image, none)` 会自动使用该值
+5. 背景图片会应用以下样式：
    - `background-size: cover` - 覆盖整个背景
    - `background-position: center` - 居中显示
    - `background-attachment: fixed` - 固定背景
