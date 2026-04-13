@@ -63,7 +63,7 @@ body {
     padding: 20px 30px;
     position: relative;
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
-    background: url('./bt.png');
+    background: url('./bg.png');
     background-size: cover;
     background-position: center;
     color: #1e1f20;
@@ -124,7 +124,7 @@ body {
     width: calc(33.33% - 15px);
     display: flex;
     align-items: center;
-    background: rgba(241, 241, 241, var(--container-bg-opacity, 1));
+    background: rgba(241, 241, 241, 0.85);
     padding: 12px 6px 12px 12px;
     border-radius: 8px;
     margin: 0 0px 10px 10px;
