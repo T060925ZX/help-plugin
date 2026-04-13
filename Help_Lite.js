@@ -300,9 +300,37 @@ const renderHelpImage = async () => {
     // 将 CSS 嵌入到 HTML 中
     const finalHtml = htmlTemplate.replace('<link rel="stylesheet" href="./style.css">', `<style>${finalCss}</style>`);
     
+    // 创建临时目录并复制主题文件
+    const tempThemeDir = path.join(TEMP_DIR, 'theme');
+    if (!fs.existsSync(tempThemeDir)) {
+        fs.mkdirSync(tempThemeDir, { recursive: true });
+    }
+    
+    // 复制主题目录下的所有文件（除了 index.html，因为已经内联了）
+    const copyThemeFiles = (srcDir, destDir) => {
+        const files = fs.readdirSync(srcDir);
+        for (const file of files) {
+            const srcPath = path.join(srcDir, file);
+            const destPath = path.join(destDir, file);
+            
+            // 跳过 index.html，因为已经内联到 finalHtml 中
+            if (file === 'index.html') continue;
+            
+            const stat = fs.statSync(srcPath);
+            if (stat.isFile()) {
+                fs.copyFileSync(srcPath, destPath);
+            }
+        }
+    };
+    
+    copyThemeFiles(themeDir, tempThemeDir);
+    
+    // 替换 HTML 中的相对路径为临时目录路径
+    let processedHtml = finalHtml.replace(/\.\//g, `file://${tempThemeDir}/`);
+    
     // 创建临时 HTML 文件
     const tempHtmlPath = path.join(TEMP_DIR, 'help_temp.html');
-    fs.writeFileSync(tempHtmlPath, finalHtml);
+    fs.writeFileSync(tempHtmlPath, processedHtml);
 
     try {
         const result = await renderer.screenshot('help-plugin', {
