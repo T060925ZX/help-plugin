@@ -39,7 +39,7 @@ body {
     background-color: #e8eaf0;
     background-image: url('./bg.png');
     background-size: cover;
-    background-position: center;
+    background-position: top center;
     background-attachment: fixed;
     margin: 0;
     padding: 0;
