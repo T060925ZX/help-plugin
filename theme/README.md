@@ -112,5 +112,29 @@ theme: auto       # auto/dark/light/none
 | `--item-bg` | 项目背景 |
 | `--icon-filter` | 图标滤镜 |
 | `--blur-amount` | 模糊程度 |
+| `--background-image` | 背景图片 URL（自动注入） |
 
 完整变量列表请参考 `theme/default/style.css`
+
+## 🖼️ 自定义背景图片
+
+在 `config/config.yaml` 中设置背景图片：
+
+```yaml
+background_image_url: 'https://example.com/background.jpg'
+```
+
+支持的格式：
+- **网络 URL**: `https://example.com/image.jpg`
+- **本地路径**: `file:///path/to/image.jpg`
+- **Base64**: `data:image/png;base64,...`
+
+### 工作原理
+
+1. 系统检测到 `background_image_url` 配置后
+2. 自动将 URL 注入到 CSS 的 `:root` 变量中
+3. CSS 中的 `var(--background-image, none)` 会自动使用该值
+4. 背景图片会应用以下样式：
+   - `background-size: cover` - 覆盖整个背景
+   - `background-position: center` - 居中显示
+   - `background-attachment: fixed` - 固定背景

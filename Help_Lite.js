@@ -274,8 +274,16 @@ const renderHelpImage = async () => {
     htmlTemplate = htmlTemplate.replace('{{hitokoto}}', hitokoto);
     htmlTemplate = htmlTemplate.replace('{{groups}}', groupsHtml);
     
+    // 处理背景图片 - 将 URL 注入到 CSS 中
+    let finalCss = cssContent;
+    if (hasBg) {
+        // 在 CSS 开头添加背景图片变量
+        const bgVarStyle = `:root { --background-image: url('${cfg.background_image_url}'); }\n`;
+        finalCss = bgVarStyle + finalCss;
+    }
+    
     // 将 CSS 嵌入到 HTML 中
-    const finalHtml = htmlTemplate.replace('<link rel="stylesheet" href="./style.css">', `<style>${cssContent}</style>`);
+    const finalHtml = htmlTemplate.replace('<link rel="stylesheet" href="./style.css">', `<style>${finalCss}</style>`);
     
     // 创建临时 HTML 文件
     const tempHtmlPath = path.join(TEMP_DIR, 'help_temp.html');
