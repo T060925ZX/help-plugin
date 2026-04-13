@@ -47,7 +47,7 @@ body {
 .container {
     width: 930px;
     padding: 30px 25px 20px 25px;
-    background-color: #f5f6fb;
+    background-color: transparent;
 }
 
 .head_box {
