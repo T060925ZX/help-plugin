@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**快速开始** | [📖 查看详细开发指南](CUSTOM_THEME_GUIDE.md)
+**快速开始** | [📖 查看详细开发指南](CUSTOM_THEME_GUIDE.md) | [🤖 AI 辅助开发指南](AI_THEME_GUIDE.md)
 
 </div>
 
@@ -98,6 +98,12 @@ background_image_url: 'https://example.com/background.jpg'
   - 高级技巧和最佳实践
   - 常见问题解答
   - 示例主题代码
+
+- [🤖 AI 辅助开发指南](AI_THEME_GUIDE.md) - 专为 AI 助手设计
+  - 快速理解项目架构
+  - 完整的开发规范
+  - AI 开发检查清单
+  - 可直接投喂给其他 AI
 
 ---
 
