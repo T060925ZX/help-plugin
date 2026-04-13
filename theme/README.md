@@ -1,5 +1,13 @@
 # 主题系统说明
 
+<div align="center">
+
+**快速开始** | [📖 查看详细开发指南](CUSTOM_THEME_GUIDE.md)
+
+</div>
+
+---
+
 ## 📁 目录结构
 
 ```
@@ -7,100 +15,93 @@ theme/
 ├── default/          # 默认主题（支持自动昼夜切换）
 │   ├── index.html    # HTML 模板
 │   └── style.css     # CSS 样式
-└── none/             # 无主题模式（不分昼夜）
-    ├── index.html
-    └── style.css
+├── none/             # 无主题模式（不分昼夜）
+│   ├── index.html
+│   └── style.css
+└── CUSTOM_THEME_GUIDE.md  # 📚 自定义主题开发指南
 ```
 
-## 🎨 创建自定义主题
+---
 
-### 1. 创建主题目录
+## ⚡ 快速使用
 
-在 `theme/` 下创建新目录，例如 `my-theme/`：
-
-```
-theme/my-theme/
-├── index.html
-└── style.css
-```
-
-### 2. 编写 HTML 模板
-
-使用以下占位符：
-
-- `{{main_title}}` - 主标题
-- `{{sub_title}}` - 副标题
-- `{{hitokoto}}` - 一言内容
-- `{{groups}}` - 命令组列表（自动生成）
-
-示例：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-cn">
-<head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <p>{{sub_title}}</p>
-            <h1>{{main_title}}</h1>
-        </div>
-        {{groups}}
-        <div class="footer">{{hitokoto}}</div>
-    </div>
-</body>
-</html>
-```
-
-### 3. 编写 CSS 样式
-
-推荐使用 CSS 变量实现主题切换：
-
-```css
-/* 浅色模式 */
-:root {
-    --bg-color: #f4f7f9;
-    --text-primary: #1e293b;
-    --accent-color: #3b82f6;
-    /* ... 更多变量 */
-}
-
-/* 深色模式 */
-[data-theme="dark"] {
-    --bg-color: #0f172a;
-    --text-primary: #f8fafc;
-    --accent-color: #3b82f6;
-    /* ... 更多变量 */
-}
-```
-
-### 4. 配置使用主题
+### 1. 切换主题
 
 在 `config/config.yaml` 中设置：
 
 ```yaml
-themes: my-theme  # 你的主题名称
-theme: auto       # auto/dark/light/none
+themes: default    # 主题名称（default / none / 自定义主题名）
+theme: auto        # 主题模式：auto / dark / light / none
 ```
 
-## 🌙 主题模式说明
+### 2. 设置背景图
 
-- **auto** - 自动根据时间切换（6-18点为浅色，其他为深色）
-- **dark** - 强制深色模式
-- **light** - 强制浅色模式
-- **none** - 不使用主题系统，完全自定义
+```yaml
+background_image_url: 'https://example.com/background.jpg'
+```
 
-## 💡 最佳实践
+系统会自动降低容器透明度至 60%，让背景图更明显。
 
-1. **复制现有主题** - 从 `default` 或 `none` 主题开始修改
-2. **使用 CSS 变量** - 便于维护和切换
-3. **保持结构一致** - 确保 HTML 中有必要的类名
-4. **测试不同模式** - 验证深浅色模式下的显示效果
+---
 
-## 🔧 可用 CSS 变量
+## 🌙 主题模式
+
+| 模式 | 说明 |
+|------|------|
+| `auto` | 自动根据时间切换（6-18点浅色，其他深色） |
+| `dark` | 强制深色模式 |
+| `light` | 强制浅色模式 |
+| `none` | 不分昼夜，使用默认样式 |
+
+---
+
+## 🎨 创建自定义主题
+
+> 💡 **提示**：以下是简要步骤，详细内容请查看 [📖 自定义主题开发指南](CUSTOM_THEME_GUIDE.md)
+
+### 基本步骤
+
+1. **创建主题目录**
+   ```
+   theme/my-theme/
+   ├── index.html
+   └── style.css
+   ```
+
+2. **复制基础文件**
+   ```bash
+   cp theme/default/index.html theme/my-theme/
+   cp theme/default/style.css theme/my-theme/
+   ```
+
+3. **修改配置**
+   ```yaml
+   themes: my-theme
+   ```
+
+4. **编辑样式**
+   - 修改 `index.html` - 调整页面结构
+   - 修改 `style.css` - 调整视觉样式
+
+5. **测试效果**
+   发送 `#刷新帮助` 查看效果
+
+---
+
+## 📚 详细文档
+
+如需深入了解主题开发，请查看：
+
+- [📖 自定义主题开发指南](CUSTOM_THEME_GUIDE.md) - 完整的开发教程
+  - HTML 模板占位符详解
+  - CSS 变量系统完整列表
+  - 高级技巧和最佳实践
+  - 常见问题解答
+  - 示例主题代码
+
+---
+
+## 🔧 核心 CSS 变量
 
 | 变量名 | 说明 |
 |--------|------|
@@ -113,38 +114,16 @@ theme: auto       # auto/dark/light/none
 | `--icon-filter` | 图标滤镜 |
 | `--blur-amount` | 模糊程度 |
 | `--background-image` | 背景图片 URL（自动注入） |
+| `--container-bg-opacity` | 容器透明度（有背景时自动调整为 0.6） |
 
 完整变量列表请参考 `theme/default/style.css`
 
-## 🖼️ 自定义背景图片
+---
 
-在 `config/config.yaml` 中设置背景图片：
+<div align="center">
 
-```yaml
-background_image_url: 'https://example.com/background.jpg'
-```
+**开始创作您的独特主题！** 🎨
 
-支持的格式：
-- **网络 URL**: `https://example.com/image.jpg`
-- **本地路径**: `file:///path/to/image.jpg`
-- **Base64**: `data:image/png;base64,...`
+[查看完整开发指南 →](CUSTOM_THEME_GUIDE.md)
 
-### 自动透明度调整
-
-当检测到有背景图片时，系统会**自动降低容器透明度**至 60%，让背景图更明显：
-
-- **无背景图**：容器透明度 95%（默认）
-- **有背景图**：容器透明度 60%（自动调整）
-
-如需自定义透明度，可以修改主题 CSS 中的 `--container-bg-opacity` 变量。
-
-### 工作原理
-
-1. 系统检测到 `background_image_url` 配置后
-2. 自动将 URL 注入到 CSS 的 `:root` 变量中
-3. 同时注入 `--container-bg-opacity: 0.6` 降低透明度
-4. CSS 中的 `var(--background-image, none)` 会自动使用该值
-5. 背景图片会应用以下样式：
-   - `background-size: cover` - 覆盖整个背景
-   - `background-position: center` - 居中显示
-   - `background-attachment: fixed` - 固定背景
+</div>
