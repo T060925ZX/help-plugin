@@ -121,7 +121,7 @@ class ResourceManager {
             const isGlobal = this.isGlobal();
             const repoUrl = isGlobal 
                 ? 'https://github.com/T060925ZX/help-plugin.git' 
-                : 'https://gitcode.com/T1602833550/help-plugin.git';
+                : 'https://gitcode.com/T060925ZX/help-plugin.git';
             
             console.log(`[Help-Plugin] 检测到网络环境: ${isGlobal ? '海外' : '国内'}, 正在克隆项目...`);
             
