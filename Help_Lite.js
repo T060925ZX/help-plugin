@@ -241,6 +241,15 @@ const renderHelpImage = async () => {
     let htmlTemplate = fs.readFileSync(themeHtmlPath, 'utf8');
     let cssContent = fs.readFileSync(themeCssPath, 'utf8');
     
+    // 替换 CSS 中的相对路径为绝对路径（用于字体等資源）
+    cssContent = cssContent.replace(/url\('\.\/([^']+)'\)/g, (match, filename) => {
+        const filePath = path.join(themeDir, filename);
+        if (fs.existsSync(filePath)) {
+            return `url('file://${filePath}')`;
+        }
+        return match;
+    });
+    
     // 生成命令组 HTML
     const groupsHtml = helpData.map(group => {
         const itemsHtml = group.list.map(item => {
