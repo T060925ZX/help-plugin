@@ -316,7 +316,8 @@ export class HelpPlugin extends plugin {
             rule: [
                 { reg: '^(#|/)?(帮助|菜单|help)$', fnc: 'showHelp' },
                 { reg: '^(#|/)?(刷新|重载|重置)帮助$', fnc: 'refreshHelp' },
-                { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp' }
+                { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp' },
+                { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp' }
             ]
         });
         this.autoCheckUpdate();
@@ -412,6 +413,76 @@ export class HelpPlugin extends plugin {
         } catch (error) {
             console.error(`[Help-Plugin] 更新失败:`, error.message);
             await e.reply(`❌ 更新失败：${error.message}\n请检查网络连接或手动更新。`);
+        }
+        
+        return true;
+    }
+
+    /**
+     * 同步喵喵帮助配置
+     */
+    async syncMiaoMiaoHelp(e) {
+        await e.reply("正在同步喵喵帮助配置...");
+        
+        try {
+            // 定义路径
+            const jsFilePath = path.resolve(_path, 'plugins/miao-plugin/config/help.js');
+            const defaultJsFilePath = path.resolve(_path, 'plugins/miao-plugin/config/help_default.js');
+            const yamlFilePath = HELP_FILE_PATH;
+            const backupFilePath = path.join(CONFIG_DIR, `help_backup_${Date.now()}.yaml`);
+
+            // 选择文件路径
+            let filePathToUse = jsFilePath;
+            if (!fs.existsSync(jsFilePath)) {
+                console.warn(`[Help-Plugin] 指定的帮助文件 ${jsFilePath} 不存在，尝试使用默认帮助文件 ${defaultJsFilePath}。`);
+                filePathToUse = defaultJsFilePath;
+                
+                if (!fs.existsSync(defaultJsFilePath)) {
+                    await e.reply("❌ 未找到喵喵插件的帮助配置文件，请确认已安装 miao-plugin。");
+                    return true;
+                }
+            }
+
+            // 备份现有的 YAML 文件
+            if (fs.existsSync(yamlFilePath)) {
+                fs.copyFileSync(yamlFilePath, backupFilePath);
+                console.log(`[Help-Plugin] 成功备份现有的 help.yaml 到 ${backupFilePath}`);
+                await e.reply("📦 已备份原有配置文件");
+            }
+
+            // 动态导入 JS 文件内容
+            console.log(`[Help-Plugin] 正在读取喵喵帮助配置: ${filePathToUse}`);
+            const module = await import(`file://${filePathToUse}`);
+            const helpConfig = module.default || module;
+
+            // 检查配置格式
+            if (!helpConfig.helpList || !Array.isArray(helpConfig.helpList)) {
+                throw new Error('喵喵帮助配置格式不正确，缺少 helpList 数组');
+            }
+
+            // 转换为简化的 YAML 格式
+            const simplifiedHelpConfig = helpConfig.helpList.map(group => ({
+                group: group.group,
+                desc: group.desc || undefined,
+                list: group.list.map(item => ({
+                    icon: item.icon || 'paimon',
+                    title: item.title,
+                    desc: item.desc
+                }))
+            }));
+
+            // 将简化后的 JavaScript 对象转换为 YAML 格式
+            const yamlContent = yaml.stringify(simplifiedHelpConfig);
+
+            // 将 YAML 内容写入文件
+            fs.writeFileSync(yamlFilePath, yamlContent, 'utf8');
+            console.log(`[Help-Plugin] 成功将 ${filePathToUse} 同步到 ${yamlFilePath}`);
+            
+            await e.reply(`✅ 成功同步喵喵帮助配置！\n📝 共转换 ${simplifiedHelpConfig.length} 个命令组\n🔄 请发送 #刷新帮助 查看效果`);
+            
+        } catch (error) {
+            console.error('[Help-Plugin] 同步过程中出现错误:', error);
+            await e.reply(`❌ 同步失败：${error.message}\n请检查喵喵插件是否正确安装。`);
         }
         
         return true;
