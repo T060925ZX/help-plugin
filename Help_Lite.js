@@ -30,6 +30,7 @@ const DEFAULT_CONFIG_PATH = path.join(RES_PATH, 'default_config');
 const CONFIG_DIR = path.join(RES_PATH, 'config');
 const CONFIG_FILE_PATH = path.join(CONFIG_DIR, 'config.yaml');
 const HELP_FILE_PATH = path.join(CONFIG_DIR, 'help.yaml');
+const THEME_PATH = path.join(RES_PATH, 'theme');
 const TEMP_DIR = path.join(_path, 'data', 'help-plugin-temp');
 
 // 初始化渲染器
@@ -49,7 +50,7 @@ class ResourceManager {
     }
 
     initDirs() {
-        [RES_PATH, ICON_PATH, DEFAULT_CONFIG_PATH, CONFIG_DIR, TEMP_DIR].forEach(p => {
+        [RES_PATH, ICON_PATH, DEFAULT_CONFIG_PATH, CONFIG_DIR, THEME_PATH, TEMP_DIR].forEach(p => {
             if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
         });
     }
@@ -122,7 +123,7 @@ class ResourceManager {
                 ? 'https://github.com/T060925ZX/help-plugin.git' 
                 : 'https://gitcode.com/T060925ZX/help-plugin.git';
             
-            console.log(`[Help-Plugin] 检测到网络环境: ${isGlobal ? '海外' : '国内'}, 正在克隆项目...`);
+            logger.mark(`[Help-Plugin] 检测到网络环境: ${isGlobal ? '海外' : '国内'}, 正在克隆项目...`);
             
             try {
                 // 删除已存在的目录（如果有）
@@ -133,10 +134,10 @@ class ResourceManager {
                 // 克隆整个项目
                 execSync(`git clone --depth=1 ${repoUrl} ${RES_PATH}`, { stdio: 'inherit' });
                 
-                console.log(`[Help-Plugin] 项目克隆成功！`);
+                logger.mark(`[Help-Plugin] 项目克隆成功！`);
             } catch (error) {
-                console.error(`[Help-Plugin] 项目克隆失败: ${error.message}`);
-                console.log(`[Help-Plugin] 请尝试手动下载项目放入 ${RES_PATH}`);
+                logger.error(`[Help-Plugin] 项目克隆失败: ${error.message}`);
+                logger.mark(`[Help-Plugin] 请尝试手动下载项目放入 ${RES_PATH}`);
                 
                 // 如果克隆失败，确保目录存在并创建基本结构
                 if (!fs.existsSync(RES_PATH)) {
@@ -187,12 +188,12 @@ const renderHelpImage = async () => {
     const cfg = resources.getConfig();
     const helpData = resources.getHelpData();
     
-    // 主题色判断
+    // 主题判断
+    const themeMode = cfg.theme || 'auto';
     let isNight = false;
-    const theme = cfg.theme || 'auto';
-    if (theme === 'dark') isNight = true;
-    else if (theme === 'light') isNight = false;
-    else {
+    if (themeMode === 'dark') isNight = true;
+    else if (themeMode === 'light') isNight = false;
+    else if (themeMode !== 'none') {
         const hour = new Date().getHours();
         isNight = hour < 6 || hour > 18;
     }
@@ -211,85 +212,78 @@ const renderHelpImage = async () => {
         }
     }
 
-    const hasBg = !!cfg.background_image_url;
-    const bodyWidth = 1200;
+    // 确定主题目录
+    let themesName = cfg.themes || 'default';
+    let themeDir = path.join(THEME_PATH, themesName);
+    let themeHtmlPath = path.join(themeDir, 'index.html');
+    let themeCssPath = path.join(themeDir, 'style.css');
+    
+    // 检查主题文件是否存在，如果不存在则回退到 default 主题
+    if (!fs.existsSync(themeHtmlPath) || !fs.existsSync(themeCssPath)) {
+        logger.warn(`[Help-Plugin] 主题 "${themesName}" 不存在，回退到 default 主题`);
+        const defaultThemeDir = path.join(THEME_PATH, 'default');
+        const defaultHtmlPath = path.join(defaultThemeDir, 'index.html');
+        const defaultCssPath = path.join(defaultThemeDir, 'style.css');
+        
+        if (!fs.existsSync(defaultHtmlPath) || !fs.existsSync(defaultCssPath)) {
+            logger.error('[Help-Plugin] default 主题文件也不存在，无法渲染');
+            return null;
+        }
+        
+        // 使用 default 主题
+        themesName = 'default';
+        themeDir = defaultThemeDir;
+        themeHtmlPath = defaultHtmlPath;
+        themeCssPath = defaultCssPath;
+    }
 
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="zh-cn">
-    <head>
-        <meta charset="utf-8">
-        <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
-            body { 
-                width: ${bodyWidth}px; padding: 60px 40px; display: flex; justify-content: center; min-height: 100vh;
-                background-image: ${hasBg ? `url('${cfg.background_image_url}')` : 'none'};
-                background-color: ${isNight ? '#0f172a' : '#f4f7f9'};
-                background-size: cover; background-position: center; background-attachment: fixed;
-            }
-            .container { 
-                width: 100%; padding: 50px; border-radius: 40px; box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
-                background: ${isNight ? (hasBg ? 'rgba(15, 23, 42, 0.75)' : 'rgba(30, 41, 59, 0.95)') : (hasBg ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.95)')}; 
-                border: 1px solid ${isNight ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)'};
-                backdrop-filter: blur(${hasBg ? '25px' : '10px'}) saturate(160%);
-                -webkit-backdrop-filter: blur(${hasBg ? '25px' : '10px'}) saturate(160%);
-            }
-            .header { margin-bottom: 40px; border-left: 8px solid #3b82f6; padding-left: 20px; }
-            .header h1 { font-size: 54px; color: ${isNight ? '#f8fafc' : '#1e293b'}; font-weight: 800; letter-spacing: -2px; }
-            .header p { font-size: 18px; color: #3b82f6; text-transform: uppercase; letter-spacing: 6px; font-weight: bold; }
-            .group-box { margin-top: 45px; }
-            .group-label { font-size: 15px; font-weight: 800; color: #3b82f6; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; }
-            .group-label::after { content: ""; flex: 1; height: 1px; background: ${isNight ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.15)'}; margin-left: 15px; }
-            .list { display: flex; flex-wrap: wrap; gap: 15px; }
-            .item { width: calc(33.33% - 10px); display: flex; align-items: center; padding: 16px 20px; border-radius: 20px; background: ${isNight ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}; border: 1px solid ${isNight ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'}; }
-            .icon { width: 38px; height: 38px; margin-right: 18px; flex-shrink: 0; filter: ${isNight ? 'brightness(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'}; }
-            .info { flex: 1; overflow: hidden; }
-            .title-text { font-size: 17px; font-weight: 700; color: ${isNight ? '#f1f5f9' : '#334155'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .desc-text { font-size: 13px; color: ${isNight ? '#94a3b8' : '#64748b'}; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .footer { margin-top: 60px; text-align: center; font-size: 14px; color: ${isNight ? '#64748b' : '#94a3b8'}; font-style: italic; border-top: 1px solid ${isNight ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}; padding-top: 25px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <p>${cfg.sub_title}</p>
-                <h1>${cfg.main_title}</h1>
-            </div>
-            ${helpData.map(group => `
-                <div class="group-box">
-                    <div class="group-label">${group.group}</div>
-                    <div class="list">
-                        ${group.list.map(item => {
-                            // 检查图标文件是否存在，如果不存在则使用默认 logo
-                            const iconPath = path.join(ICON_PATH, item.icon + '.png');
-                            const iconSrc = fs.existsSync(iconPath) 
-                                ? `file://${iconPath}` 
-                                : `file://${path.join(ICON_PATH, 'logo.png')}`;
-                            return `
+    // 读取主题模板
+    let htmlTemplate = fs.readFileSync(themeHtmlPath, 'utf8');
+    let cssContent = fs.readFileSync(themeCssPath, 'utf8');
+    
+    // 生成命令组 HTML
+    const groupsHtml = helpData.map(group => {
+        const itemsHtml = group.list.map(item => {
+            const iconPath = path.join(ICON_PATH, item.icon + '.png');
+            const iconSrc = fs.existsSync(iconPath) 
+                ? `file://${iconPath}` 
+                : `file://${path.join(ICON_PATH, 'logo.png')}`;
+            return `
                             <div class="item">
                                 <img class="icon" src="${iconSrc}">
                                 <div class="info">
                                     <div class="title-text">${item.title}</div>
                                     <div class="desc-text">${item.desc}</div>
                                 </div>
-                            </div>
-                            `;
-                        }).join('')}
+                            </div>`;
+        }).join('\n');
+        
+        return `
+                <div class="group-box">
+                    <div class="group-label">${group.group}</div>
+                    <div class="list">
+                        ${itemsHtml}
                     </div>
-                </div>
-            `).join('')}
-            <div class="footer">${hitokoto}</div>
-        </div>
-    </body>
-    </html>
-    `;
+                </div>`;
+    }).join('\n');
 
-    const htmlPath = path.join(TEMP_DIR, 'help_temp.html');
-    fs.writeFileSync(htmlPath, htmlContent);
+    // 替换模板变量
+    const hasBg = !!cfg.background_image_url;
+    htmlTemplate = htmlTemplate.replace('{{sub_title}}', cfg.sub_title);
+    htmlTemplate = htmlTemplate.replace('{{main_title}}', cfg.main_title);
+    htmlTemplate = htmlTemplate.replace('{{hitokoto}}', hitokoto);
+    htmlTemplate = htmlTemplate.replace('{{groups}}', groupsHtml);
+    
+    // 将 CSS 嵌入到 HTML 中
+    const finalHtml = htmlTemplate.replace('<link rel="stylesheet" href="./style.css">', `<style>${cssContent}</style>`);
+    
+    // 创建临时 HTML 文件
+    const tempHtmlPath = path.join(TEMP_DIR, 'help_temp.html');
+    fs.writeFileSync(tempHtmlPath, finalHtml);
 
     try {
         const result = await renderer.screenshot('help-plugin', {
-            tplFile: htmlPath,
+            tplFile: tempHtmlPath,
             imgType: 'jpeg',
             quality: 100,
             setViewport: { deviceScaleFactor: cfg.device_scale_factor || 1.2 }
@@ -300,7 +294,7 @@ const renderHelpImage = async () => {
             return result;
         }
     } catch (e) {
-        console.error("[Help-Plugin] 渲染出错:", e);
+        logger.error("[Help-Plugin] 渲染出错:", e);
     }
     return null;
 };
@@ -373,14 +367,14 @@ export class HelpPlugin extends plugin {
         
         try {
             // 在 ./resources/help-plugin 目录执行 git pull
-            console.log(`[Help-Plugin] 正在执行 git pull...`);
+            logger.mark(`[Help-Plugin] 正在执行 git pull...`);
             const pullResult = execSync('git pull', { 
                 cwd: RES_PATH,
                 encoding: 'utf8',
                 stdio: 'pipe'
             });
             
-            console.log(`[Help-Plugin] Git pull 结果:`, pullResult);
+            logger.debug(`[Help-Plugin] Git pull 结果:`, pullResult);
             
             // 判断是否有更新
             if (pullResult.includes('Already up to date') || pullResult.includes('已经是最新的')) {
@@ -403,7 +397,7 @@ export class HelpPlugin extends plugin {
             // 复制文件
             if (fs.existsSync(sourceFile)) {
                 fs.copyFileSync(sourceFile, targetFile);
-                console.log(`[Help-Plugin] 文件已复制到: ${targetFile}`);
+                logger.mark(`[Help-Plugin] 文件已复制到: ${targetFile}`);
                 
                 await e.reply("✅ 帮助插件更新成功！\n🔄 请重启 Bot 以应用更新。", true);
             } else {
@@ -411,7 +405,7 @@ export class HelpPlugin extends plugin {
             }
             
         } catch (error) {
-            console.error(`[Help-Plugin] 更新失败:`, error.message);
+            logger.error(`[Help-Plugin] 更新失败:`, error.message);
             await e.reply(`❌ 更新失败：${error.message}\n请检查网络连接或手动更新。`);
         }
         
@@ -434,7 +428,7 @@ export class HelpPlugin extends plugin {
             // 选择文件路径
             let filePathToUse = jsFilePath;
             if (!fs.existsSync(jsFilePath)) {
-                console.warn(`[Help-Plugin] 指定的帮助文件 ${jsFilePath} 不存在，尝试使用默认帮助文件 ${defaultJsFilePath}。`);
+                logger.warn(`[Help-Plugin] 指定的帮助文件 ${jsFilePath} 不存在，尝试使用默认帮助文件 ${defaultJsFilePath}。`);
                 filePathToUse = defaultJsFilePath;
                 
                 if (!fs.existsSync(defaultJsFilePath)) {
@@ -446,12 +440,12 @@ export class HelpPlugin extends plugin {
             // 备份现有的 YAML 文件
             if (fs.existsSync(yamlFilePath)) {
                 fs.copyFileSync(yamlFilePath, backupFilePath);
-                console.log(`[Help-Plugin] 成功备份现有的 help.yaml 到 ${backupFilePath}`);
+                logger.mark(`[Help-Plugin] 成功备份现有的 help.yaml 到 ${backupFilePath}`);
                 await e.reply("📦 已备份原有配置文件");
             }
 
             // 动态导入 JS 文件内容
-            console.log(`[Help-Plugin] 正在读取喵喵帮助配置: ${filePathToUse}`);
+            logger.mark(`[Help-Plugin] 正在读取喵喵帮助配置: ${filePathToUse}`);
             const module = await import(`file://${filePathToUse}`);
             const helpConfig = module.default || module;
 
@@ -476,12 +470,12 @@ export class HelpPlugin extends plugin {
 
             // 将 YAML 内容写入文件
             fs.writeFileSync(yamlFilePath, yamlContent, 'utf8');
-            console.log(`[Help-Plugin] 成功将 ${filePathToUse} 同步到 ${yamlFilePath}`);
+            logger.mark(`[Help-Plugin] 成功将 ${filePathToUse} 同步到 ${yamlFilePath}`);
             
             await e.reply(`✅ 成功同步喵喵帮助配置！\n📝 共转换 ${simplifiedHelpConfig.length} 个命令组\n🔄 请发送 #刷新帮助 查看效果`);
             
         } catch (error) {
-            console.error('[Help-Plugin] 同步过程中出现错误:', error);
+            logger.error('[Help-Plugin] 同步过程中出现错误:', error);
             await e.reply(`❌ 同步失败：${error.message}\n请检查喵喵插件是否正确安装。`);
         }
         
@@ -502,7 +496,7 @@ export class HelpPlugin extends plugin {
             // 步骤 1: 备份现有目录
             if (fs.existsSync(RES_PATH)) {
                 await e.reply("📦 正在备份现有资源...");
-                console.log(`[Help-Plugin] 正在备份 ${RES_PATH} 到 ${finalBackupPath}`);
+                logger.mark(`[Help-Plugin] 正在备份 ${RES_PATH} 到 ${finalBackupPath}`);
                 
                 // 递归复制目录
                 const copyDir = (src, dest) => {
@@ -525,7 +519,7 @@ export class HelpPlugin extends plugin {
                 };
                 
                 copyDir(RES_PATH, finalBackupPath);
-                console.log(`[Help-Plugin] 备份完成: ${finalBackupPath}`);
+                logger.mark(`[Help-Plugin] 备份完成: ${finalBackupPath}`);
                 await e.reply(`✅ 备份完成`);
             } else {
                 await e.reply("⚠️ 未发现现有资源目录，跳过备份步骤");
@@ -535,7 +529,7 @@ export class HelpPlugin extends plugin {
             await e.reply("🗑️ 正在清理旧文件...");
             if (fs.existsSync(RES_PATH)) {
                 fs.rmSync(RES_PATH, { recursive: true, force: true });
-                console.log(`[Help-Plugin] 已删除旧目录: ${RES_PATH}`);
+                logger.mark(`[Help-Plugin] 已删除旧目录: ${RES_PATH}`);
             }
             
             // 步骤 3: 重新克隆仓库
@@ -556,12 +550,12 @@ export class HelpPlugin extends plugin {
                 ? 'https://github.com/T060925ZX/help-plugin.git' 
                 : 'https://gitcode.com/T060925ZX/help-plugin.git';
             
-            console.log(`[Help-Plugin] 检测到网络环境: ${isGlobal ? '海外' : '国内'}, 正在克隆...`);
+            logger.mark(`[Help-Plugin] 检测到网络环境: ${isGlobal ? '海外' : '国内'}, 正在克隆...`);
             await e.reply(`🌐 使用源: ${isGlobal ? 'GitHub' : 'GitCode'}`);
             
             execSync(`git clone --depth=1 ${repoUrl} ${RES_PATH}`, { stdio: 'inherit' });
             
-            console.log(`[Help-Plugin] 克隆成功: ${RES_PATH}`);
+            logger.mark(`[Help-Plugin] 克隆成功: ${RES_PATH}`);
             await e.reply("✅ 仓库克隆成功！");
             
             // 步骤 4: 复制 Help_Lite.js 到 plugins/example/
@@ -576,7 +570,7 @@ export class HelpPlugin extends plugin {
             
             if (fs.existsSync(sourceFile)) {
                 fs.copyFileSync(sourceFile, targetFile);
-                console.log(`[Help-Plugin] 文件已复制到: ${targetFile}`);
+                logger.mark(`[Help-Plugin] 文件已复制到: ${targetFile}`);
             }
             
             await e.reply(
@@ -587,7 +581,7 @@ export class HelpPlugin extends plugin {
             );
             
         } catch (error) {
-            console.error('[Help-Plugin] 重置失败:', error);
+            logger.error('[Help-Plugin] 重置失败:', error);
             await e.reply(
                 `❌ 重置失败：${error.message}\n` +
                 "💡 请检查网络连接和 Git 配置\n" +

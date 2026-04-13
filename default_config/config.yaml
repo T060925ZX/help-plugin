@@ -4,3 +4,4 @@ default_hitokoto: 追求卓越，成功就会在不经意间追上你
 background_image_url: ''
 device_scale_factor: 1.2
 theme: auto
+themes: default
