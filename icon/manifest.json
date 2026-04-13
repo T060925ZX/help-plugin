@@ -1,0 +1,350 @@
+[
+  {
+    "name": "Sky",
+    "file": "Sky.png"
+  },
+  {
+    "name": "abyss",
+    "file": "abyss.png"
+  },
+  {
+    "name": "archaic_stone",
+    "file": "archaic_stone.png"
+  },
+  {
+    "name": "blue",
+    "file": "blue.png"
+  },
+  {
+    "name": "chat-private",
+    "file": "chat-private.png"
+  },
+  {
+    "name": "chat",
+    "file": "chat.png"
+  },
+  {
+    "name": "chatgpt",
+    "file": "chatgpt.png"
+  },
+  {
+    "name": "check",
+    "file": "check.webp"
+  },
+  {
+    "name": "coin",
+    "file": "coin.png"
+  },
+  {
+    "name": "condessence_crystal",
+    "file": "condessence_crystal.png"
+  },
+  {
+    "name": "confirm",
+    "file": "confirm.png"
+  },
+  {
+    "name": "delightful_encounter",
+    "file": "delightful_encounter.png"
+  },
+  {
+    "name": "destroy-other",
+    "file": "destroy-other.png"
+  },
+  {
+    "name": "destroy",
+    "file": "destroy.png"
+  },
+  {
+    "name": "diagram",
+    "file": "diagram.png"
+  },
+  {
+    "name": "draw",
+    "file": "draw.png"
+  },
+  {
+    "name": "eat",
+    "file": "eat.png"
+  },
+  {
+    "name": "essence_of_pure_sacred_dewdrop",
+    "file": "essence_of_pure_sacred_dewdrop.png"
+  },
+  {
+    "name": "everamber",
+    "file": "everamber.png"
+  },
+  {
+    "name": "excel",
+    "file": "excel.png"
+  },
+  {
+    "name": "eye",
+    "file": "eye.png"
+  },
+  {
+    "name": "flower_1",
+    "file": "flower_1.png"
+  },
+  {
+    "name": "flower_2",
+    "file": "flower_2.png"
+  },
+  {
+    "name": "game",
+    "file": "game.png"
+  },
+  {
+    "name": "help",
+    "file": "help.png"
+  },
+  {
+    "name": "kamera",
+    "file": "kamera.png"
+  },
+  {
+    "name": "key",
+    "file": "key.png"
+  },
+  {
+    "name": "ledger",
+    "file": "ledger.png"
+  },
+  {
+    "name": "list",
+    "file": "list.png"
+  },
+  {
+    "name": "logo",
+    "file": "logo.png"
+  },
+  {
+    "name": "lumidouce_bell",
+    "file": "lumidouce_bell.png"
+  },
+  {
+    "name": "mora",
+    "file": "mora.png"
+  },
+  {
+    "name": "moster",
+    "file": "moster.png"
+  },
+  {
+    "name": "paimon",
+    "file": "paimon.png"
+  },
+  {
+    "name": "pamu",
+    "file": "pamu.png"
+  },
+  {
+    "name": "picture",
+    "file": "picture.png"
+  },
+  {
+    "name": "pluie_lotus",
+    "file": "pluie_lotus.png"
+  },
+  {
+    "name": "queue",
+    "file": "queue.png"
+  },
+  {
+    "name": "restaurant_smoothie",
+    "file": "restaurant_smoothie.png"
+  },
+  {
+    "name": "role",
+    "file": "role.png"
+  },
+  {
+    "name": "romaritime_flower",
+    "file": "romaritime_flower.png"
+  },
+  {
+    "name": "shell",
+    "file": "shell.png"
+  },
+  {
+    "name": "sign",
+    "file": "sign.png"
+  },
+  {
+    "name": "smiley-wink",
+    "file": "smiley-wink.png"
+  },
+  {
+    "name": "sound",
+    "file": "sound.png"
+  },
+  {
+    "name": "spring_of_pure_sacred_dewdrop",
+    "file": "spring_of_pure_sacred_dewdrop.png"
+  },
+  {
+    "name": "sr",
+    "file": "sr.png"
+  },
+  {
+    "name": "surging_sacred_chalice",
+    "file": "surging_sacred_chalice.png"
+  },
+  {
+    "name": "switch",
+    "file": "switch.png"
+  },
+  {
+    "name": "team",
+    "file": "team.png"
+  },
+  {
+    "name": "text",
+    "file": "text.png"
+  },
+  {
+    "name": "token",
+    "file": "token.png"
+  },
+  {
+    "name": "tourbillon_device",
+    "file": "tourbillon_device.png"
+  },
+  {
+    "name": "unfading_silky_grace",
+    "file": "unfading_silky_grace.png"
+  },
+  {
+    "name": "wave",
+    "file": "wave.png"
+  },
+  {
+    "name": "weapon",
+    "file": "weapon.png"
+  },
+  {
+    "name": "wiki",
+    "file": "wiki.png"
+  },
+  {
+    "name": "wisdom",
+    "file": "wisdom.png"
+  },
+  {
+    "name": "wondrous_lovely_flower",
+    "file": "wondrous_lovely_flower.png"
+  },
+  {
+    "name": "zzz",
+    "file": "zzz.png"
+  },
+  {
+    "name": "七圣召唤",
+    "file": "七圣召唤.png"
+  },
+  {
+    "name": "三月七",
+    "file": "三月七.png"
+  },
+  {
+    "name": "养成计算",
+    "file": "养成计算.png"
+  },
+  {
+    "name": "刻晴",
+    "file": "刻晴.png"
+  },
+  {
+    "name": "原石",
+    "file": "原石.png"
+  },
+  {
+    "name": "原神",
+    "file": "原神.png"
+  },
+  {
+    "name": "史莱姆",
+    "file": "史莱姆.png"
+  },
+  {
+    "name": "岩神瞳共鸣石",
+    "file": "岩神瞳共鸣石.png"
+  },
+  {
+    "name": "打卡",
+    "file": "打卡.png"
+  },
+  {
+    "name": "攻略",
+    "file": "攻略.png"
+  },
+  {
+    "name": "星辉",
+    "file": "星辉.png"
+  },
+  {
+    "name": "星铁",
+    "file": "星铁.png"
+  },
+  {
+    "name": "树脂",
+    "file": "树脂.png"
+  },
+  {
+    "name": "水神瞳共鸣石",
+    "file": "水神瞳共鸣石.png"
+  },
+  {
+    "name": "派蒙",
+    "file": "派蒙.png"
+  },
+  {
+    "name": "浮世",
+    "file": "浮世.png"
+  },
+  {
+    "name": "米游社",
+    "file": "米游社.png"
+  },
+  {
+    "name": "纠缠之缘",
+    "file": "纠缠之缘.png"
+  },
+  {
+    "name": "绑定账号",
+    "file": "绑定账号.png"
+  },
+  {
+    "name": "统计",
+    "file": "统计.png"
+  },
+  {
+    "name": "草神瞳共鸣石",
+    "file": "草神瞳共鸣石.png"
+  },
+  {
+    "name": "记录",
+    "file": "记录.png"
+  },
+  {
+    "name": "钓鱼",
+    "file": "钓鱼.png"
+  },
+  {
+    "name": "问号",
+    "file": "问号.png"
+  },
+  {
+    "name": "雷神瞳共鸣石",
+    "file": "雷神瞳共鸣石.png"
+  },
+  {
+    "name": "风神瞳共鸣石",
+    "file": "风神瞳共鸣石.png"
+  },
+  {
+    "name": "风车",
+    "file": "风车.png"
+  }
+]

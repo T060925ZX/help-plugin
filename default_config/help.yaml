@@ -1,0 +1,16 @@
+- group: 新分组
+  list:
+    - icon: Sky
+      title: 新命令
+      desc: 功能描述
+    - icon: ledger
+      title: 新命令
+      desc: 功能描述
+- group: 新分组
+  list:
+    - icon: paimon
+      title: 新命令
+      desc: 功能描述
+    - icon: logo
+      title: 新命令
+      desc: 功能描述
