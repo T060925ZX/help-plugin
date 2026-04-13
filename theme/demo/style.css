@@ -55,7 +55,7 @@ body {
 .container {
     width: 930px;
     padding: 30px 25px 20px 25px;
-    background-color: transparent;
+    background-color: rgba(245, 246, 251, var(--container-bg-opacity, 1));
 }
 
 .head_box {
