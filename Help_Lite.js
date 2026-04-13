@@ -274,6 +274,17 @@ const renderHelpImage = async () => {
     htmlTemplate = htmlTemplate.replace('{{hitokoto}}', hitokoto);
     htmlTemplate = htmlTemplate.replace('{{groups}}', groupsHtml);
     
+    // 设置主题模式
+    let themeValue = 'light';
+    if (themeMode === 'dark') {
+        themeValue = 'dark';
+    } else if (themeMode === 'auto') {
+        themeValue = isNight ? 'dark' : 'light';
+    } else if (themeMode === 'none') {
+        themeValue = 'none';
+    }
+    htmlTemplate = htmlTemplate.replace('{{theme}}', themeValue);
+    
     // 处理背景图片 - 将 URL 注入到 CSS 中
     let finalCss = cssContent;
     if (hasBg) {
