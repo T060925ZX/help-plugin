@@ -1,0 +1,160 @@
+/* Demo 主题 - 经典卡片风格 */
+
+/* 隐藏滚动条 */
+body {
+    overflow: -moz-scrollbars-none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+    height: 5px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+    font-size: 16px;
+    width: 900px;
+    color: #1e1f20;
+    transform: scale(1.5);
+    transform-origin: 0 0;
+    background-color: #e8eaf0;
+}
+
+.container {
+    width: 930px;
+    padding: 20px 15px 10px 15px;
+    background-color: #f5f6fb;
+}
+
+.head_box {
+    border-radius: 15px;
+    padding: 10px 20px;
+    position: relative;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.head_box .id_text {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.head_box .day_text {
+    font-size: 20px;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+/* 适配默认的 group-box 结构 */
+.group-box {
+    border-radius: 15px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    padding: 20px 10px 5px 10px;
+    background: #fff;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+/* 将 group-label 转换为标签页样式 */
+.group-label {
+    position: absolute;
+    top: -10px;
+    left: -8px;
+    background: #d4b98c;
+    color: #fff;
+    font-size: 14px;
+    padding: 3px 10px;
+    border-radius: 15px 0px 15px 15px;
+    z-index: 20;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.list {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+/* 适配默认的 item 结构 */
+.list .item {
+    width: 286px;
+    display: flex;
+    align-items: center;
+    background: #f1f1f1;
+    padding: 8px 6px 8px 6px;
+    border-radius: 8px;
+    margin: 0 0px 10px 10px;
+    transition: all 0.2s ease;
+}
+
+.list .item:hover {
+    background: #e8e8e8;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 适配默认的 icon 类 */
+.list .item .icon {
+    width: 24px;
+    height: 24px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    position: relative;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+/* 适配默认的 info 结构 */
+.list .item .info {
+    font-size: 16px;
+    margin-left: 6px;
+    line-height: 20px;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 适配默认的 title-text */
+.list .item .info .title-text {
+    font-weight: 500;
+    color: #1e1f20;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 适配默认的 desc-text */
+.list .item .info .desc-text {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logo {
+    font-size: 14px;
+    text-align: center;
+    color: #7994a7;
+    margin-top: 20px;
+    padding: 15px;
+    font-style: italic;
+}
