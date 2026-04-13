@@ -19,7 +19,7 @@
 /* 深色模式 */
 [data-theme="dark"] {
     --bg-color: #0f172a;
-    --container-bg: rgba(30, 41, 59, 0.95);
+    --container-bg: rgba(32, 38, 48, 0.95);
     --container-bg-blur: rgba(15, 23, 42, 0.75);
     --border-color: rgba(255, 255, 255, 0.1);
     --text-primary: #f8fafc;
@@ -59,7 +59,7 @@ body {
     padding: 50px;
     border-radius: 40px;
     box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
-    background: var(--has-background, var(--container-bg-blur)) var(--container-bg);
+    background: var(--container-bg);
     border: 1px solid var(--border-color);
     backdrop-filter: blur(var(--blur-amount)) saturate(160%);
     -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(160%);
