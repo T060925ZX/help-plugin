@@ -31,23 +31,10 @@ body {
     transform: scale(1.5);
     transform-origin: 0 0;
     background-color: #e8eaf0;
-    position: relative;
-}
-
-/* 背景图层 - 使用绝对定位 */
-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background-image: var(--background-image, none);
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
-    z-index: -1;
-    pointer-events: none;
+    background-attachment: fixed;
 }
 
 .container {
