@@ -1,5 +1,13 @@
 /* Demo 主题 - 经典卡片风格 */
 
+/* 引入自定义字体 */
+@font-face {
+    font-family: 'DemoFont';
+    src: url('./zh-cn.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* 隐藏滚动条 */
 body {
     overflow: -moz-scrollbars-none;
@@ -21,7 +29,7 @@ body::-webkit-scrollbar {
     padding: 0;
     box-sizing: border-box;
     user-select: none;
-    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: "DemoFont", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 body {
@@ -62,7 +70,7 @@ body {
 }png
 
 .head_box .id_text {
-    font-size: 22px;
+    font-size: 32px;
     font-weight: bold;
     margin-bottom: 8px;
     color: #1e1f20;
