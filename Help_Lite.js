@@ -297,6 +297,11 @@ const renderHelpImage = async () => {
         finalCss = bgVarStyle + finalCss;
     }
     
+    // 处理文本换行配置
+    const wrapText = cfg.wrap_text || false;
+    const wrapTextStyle = `:root { --wrap-text: ${wrapText ? 'normal' : 'nowrap'}; }\n`;
+    finalCss = wrapTextStyle + finalCss;
+    
     // 将 CSS 嵌入到 HTML 中
     const finalHtml = htmlTemplate.replace('<link rel="stylesheet" href="./style.css">', `<style>${finalCss}</style>`);
     
