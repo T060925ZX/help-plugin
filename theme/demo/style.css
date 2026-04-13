@@ -37,7 +37,7 @@ body {
     width: 900px;
     color: #1e1f20;
     background-color: #e8eaf0;
-    background-image: var(--background-image, none);
+    background-image: url('./bg.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -63,7 +63,7 @@ body {
     padding: 20px 30px;
     position: relative;
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
-    background: url('./bg.png');
+    background: url('./bt.png');
     background-size: cover;
     background-position: center;
     color: #1e1f20;
