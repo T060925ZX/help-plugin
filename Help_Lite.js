@@ -355,6 +355,369 @@ const renderHelpImage = async () => {
     return null;
 };
 
+/**
+ * 扫描 theme 目录，返回所有有效主题名（含 index.html 和 style.css）
+ */
+const scanThemes = () => {
+    if (!fs.existsSync(THEME_PATH)) return [];
+    try {
+        return fs.readdirSync(THEME_PATH, { withFileTypes: true })
+            .filter(d => d.isDirectory())
+            .map(d => d.name)
+            .filter(name => {
+                const dir = path.join(THEME_PATH, name);
+                return fs.existsSync(path.join(dir, 'index.html'))
+                    && fs.existsSync(path.join(dir, 'style.css'));
+            })
+            .sort();
+    } catch (e) {
+        logger.error('[Help-Plugin] 扫描主题目录失败:', e);
+        return [];
+    }
+};
+
+/**
+ * 为指定主题渲染一张小尺寸预览图
+ * @param {string} themeName 主题名称
+ * @returns {Promise<string|null>} 预览图文件路径
+ */
+const renderThemePreview = async (themeName) => {
+    const themeDir = path.join(THEME_PATH, themeName);
+    const themeHtmlPath = path.join(themeDir, 'index.html');
+    const themeCssPath = path.join(themeDir, 'style.css');
+
+    if (!fs.existsSync(themeHtmlPath) || !fs.existsSync(themeCssPath)) return null;
+
+    // 预览缓存目录
+    const previewDir = path.join(TEMP_DIR, 'theme_preview');
+    if (!fs.existsSync(previewDir)) fs.mkdirSync(previewDir, { recursive: true });
+
+    const previewImgPath = path.join(previewDir, `${themeName}.jpg`);
+
+    // 基于主题文件哈希做缓存，主题没改就不重新渲染
+    const htmlHash = resources.getFileHash(themeHtmlPath);
+    const cssHash = resources.getFileHash(themeCssPath);
+    const currentHash = `${htmlHash}-${cssHash}`;
+    const hashFile = path.join(previewDir, `${themeName}.hash`);
+    const savedHash = fs.existsSync(hashFile) ? fs.readFileSync(hashFile, 'utf8') : '';
+
+    if (currentHash === savedHash && fs.existsSync(previewImgPath)) {
+        return previewImgPath;
+    }
+
+    // 示例数据（每个主题都用同一套，便于对比）
+    const demoGroups = [
+        {
+            group: '基础命令',
+            list: [
+                { icon: 'help',   title: '#帮助',     desc: '查看指令菜单' },
+                { icon: 'list',   title: '#菜单',     desc: '功能列表' },
+                { icon: 'sign',   title: '#签到',     desc: '每日签到' },
+                { icon: 'switch', title: '#重启',     desc: '重启机器人' },
+                { icon: 'wiki',   title: '#更新',     desc: '更新插件' },
+                { icon: 'eye',    title: '#状态',     desc: '查看状态' }
+            ]
+        },
+        {
+            group: '娱乐互动',
+            list: [
+                { icon: 'chat',         title: '#聊天',   desc: 'AI 对话' },
+                { icon: 'draw',         title: '#画图',   desc: 'AI 绘画' },
+                { icon: 'smiley-wink',  title: '#占卜',   desc: '今日运势' },
+                { icon: 'game',         title: '#游戏',   desc: '小游戏' },
+                { icon: 'sound',        title: '#点歌',   desc: '音乐点播' },
+                { icon: 'eat',          title: '#美食',   desc: '推荐美食' }
+            ]
+        }
+    ];
+
+    try {
+        let htmlTemplate = fs.readFileSync(themeHtmlPath, 'utf8');
+        let cssContent = fs.readFileSync(themeCssPath, 'utf8');
+
+        const groupsHtml = demoGroups.map(group => {
+            const itemsHtml = group.list.map(item => {
+                const iconPath = path.join(ICON_PATH, item.icon + '.png');
+                const iconSrc = fs.existsSync(iconPath)
+                    ? `file://${iconPath}`
+                    : `file://${path.join(ICON_PATH, 'logo.png')}`;
+                return `
+                            <div class="item">
+                                <img class="icon" src="${iconSrc}">
+                                <div class="info">
+                                    <div class="title-text">${item.title}</div>
+                                    <div class="desc-text">${item.desc}</div>
+                                </div>
+                            </div>`;
+            }).join('\n');
+            return `
+                <div class="group-box">
+                    <div class="group-label">${group.group}</div>
+                    <div class="list">
+                        ${itemsHtml}
+                    </div>
+                </div>`;
+        }).join('\n');
+
+        htmlTemplate = htmlTemplate
+            .replace('{{sub_title}}', 'COMMAND MENU')
+            .replace('{{main_title}}', 'YUNZAI BOT')
+            .replace('{{hitokoto}}', `主题预览 · ${themeName}`)
+            .replace('{{groups}}', groupsHtml)
+            .replace('{{theme}}', 'none');
+
+        // 默认透明度注入
+        const injectedCss = `:root { --wrap-text: nowrap; --container-bg-opacity: 0.95; }\n` + cssContent;
+        const finalHtml = htmlTemplate.replace(
+            '<link rel="stylesheet" href="./style.css">',
+            `<style>${injectedCss}</style>`
+        );
+
+        // 复制主题子资源到独立的预览临时目录，避免与主帮助图冲突
+        const tempThemeDir = path.join(previewDir, `__theme_${themeName}`);
+        if (!fs.existsSync(tempThemeDir)) fs.mkdirSync(tempThemeDir, { recursive: true });
+
+        const files = fs.readdirSync(themeDir);
+        for (const file of files) {
+            if (file === 'index.html') continue;
+            const srcPath = path.join(themeDir, file);
+            const stat = fs.statSync(srcPath);
+            if (stat.isFile()) {
+                fs.copyFileSync(srcPath, path.join(tempThemeDir, file));
+            }
+        }
+
+        const processedHtml = finalHtml.replace(/\.\//g, `file://${tempThemeDir}/`);
+        const tempHtmlPath = path.join(previewDir, `${themeName}_preview.html`);
+        fs.writeFileSync(tempHtmlPath, processedHtml);
+
+        const result = await renderer.screenshot(`help-plugin-preview-${themeName}`, {
+            tplFile: tempHtmlPath,
+            imgType: 'jpeg',
+            quality: 85,
+            setViewport: { deviceScaleFactor: 0.6 }   // 缩小预览
+        });
+
+        if (result) {
+            fs.writeFileSync(previewImgPath, result);
+            fs.writeFileSync(hashFile, currentHash);
+            return previewImgPath;
+        }
+    } catch (e) {
+        logger.error(`[Help-Plugin] 渲染主题预览 "${themeName}" 失败:`, e);
+    }
+    return null;
+};
+
+/**
+ * 渲染主题画廊总览图：把所有主题的预览拼成一张网格
+ */
+const renderThemeGallery = async () => {
+    const themes = scanThemes();
+    if (themes.length === 0) return null;
+
+    const cfg = resources.getConfig();
+    const currentTheme = cfg.themes || 'default';
+
+    logger.mark(`[Help-Plugin] 开始渲染主题画廊，共 ${themes.length} 个主题`);
+
+    // 逐个渲染预览（利用缓存，后续会很快）
+    const previews = [];
+    for (const name of themes) {
+        const img = await renderThemePreview(name);
+        previews.push({ name, img, active: name === currentTheme });
+    }
+
+    // 生成画廊 HTML
+    const cardsHtml = previews.map(p => {
+        const imgTag = p.img
+            ? `<img class="preview-img" src="file://${p.img}">`
+            : `<div class="preview-fallback">无法生成预览</div>`;
+        const activeBadge = p.active ? `<span class="active-badge">● 当前</span>` : '';
+        return `
+        <div class="theme-card ${p.active ? 'is-active' : ''}">
+            <div class="preview-wrap">${imgTag}</div>
+            <div class="card-footer">
+                <span class="theme-name">${p.name}</span>
+                ${activeBadge}
+            </div>
+        </div>`;
+    }).join('\n');
+
+    const galleryHtml = `<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased; }
+body {
+    width: 1200px;
+    padding: 50px 40px;
+    background: radial-gradient(circle at 20% 10%, #ffd6ec 0%, transparent 45%),
+                radial-gradient(circle at 85% 15%, #c4dfff 0%, transparent 45%),
+                radial-gradient(circle at 70% 90%, #d8c6ff 0%, transparent 50%),
+                linear-gradient(135deg, #eef2ff 0%, #f5ecff 60%, #ffecf5 100%);
+}
+.page-header {
+    padding: 30px 36px;
+    margin-bottom: 36px;
+    border-radius: 32px;
+    background: rgba(255,255,255,0.35);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.9),
+                0 20px 50px -20px rgba(15,20,60,0.2);
+}
+.page-header .sub {
+    font-size: 14px;
+    color: #007aff;
+    letter-spacing: 5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.page-header .title {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    background: linear-gradient(135deg, #1a1c2e 0%, #3a3e6a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.page-header .summary {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4a4e6b;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+.theme-card {
+    padding: 14px;
+    border-radius: 28px;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.55);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.9),
+                0 10px 30px -10px rgba(15,20,60,0.15);
+}
+.theme-card.is-active {
+    border: 2px solid #007aff;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.9),
+                0 0 0 4px rgba(0,122,255,0.15),
+                0 10px 30px -10px rgba(0,122,255,0.3);
+}
+.preview-wrap {
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.04);
+    aspect-ratio: 1200 / 900;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+.preview-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.preview-fallback {
+    padding: 60px 0;
+    color: #94a3b8;
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+}
+.card-footer {
+    margin-top: 12px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.theme-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1c2e;
+    letter-spacing: -0.2px;
+}
+.active-badge {
+    font-size: 12px;
+    color: #007aff;
+    background: rgba(0,122,255,0.12);
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.tip {
+    margin-top: 32px;
+    padding: 18px 24px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.35);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.5);
+    font-size: 13.5px;
+    color: #4a4e6b;
+    text-align: center;
+    line-height: 1.7;
+}
+.tip code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: rgba(0,122,255,0.1);
+    color: #007aff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    margin: 0 2px;
+}
+</style>
+</head>
+<body>
+    <div class="page-header">
+        <div class="sub">THEME GALLERY</div>
+        <div class="title">主题列表</div>
+        <div class="summary">共 ${themes.length} 个可用主题 · 当前使用：<strong>${currentTheme}</strong></div>
+    </div>
+    <div class="grid">
+        ${cardsHtml}
+    </div>
+    <div class="tip">
+        使用 <code>#切换主题 主题名</code> 可切换主题，例如 <code>#切换主题 liquid-glass</code>
+    </div>
+</body>
+</html>`;
+
+    const galleryPath = path.join(TEMP_DIR, 'theme_gallery.html');
+    fs.writeFileSync(galleryPath, galleryHtml);
+
+    try {
+        const result = await renderer.screenshot('help-plugin-gallery', {
+            tplFile: galleryPath,
+            imgType: 'jpeg',
+            quality: 95,
+            setViewport: { deviceScaleFactor: 1.2 }
+        });
+
+        if (result) {
+            const outPath = path.join(TEMP_DIR, 'theme_gallery.jpg');
+            fs.writeFileSync(outPath, result);
+            return result;
+        }
+    } catch (e) {
+        logger.error('[Help-Plugin] 渲染主题画廊失败:', e);
+    }
+    return null;
+};
+
 export class HelpPlugin extends plugin {
     constructor() {
         super({
@@ -368,7 +731,8 @@ export class HelpPlugin extends plugin {
                 { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp' },
                 { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp' },
                 { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp' },
-                { reg: '^(#|/)?切换主题\\s*(.+)$', fnc: 'switchTheme' }
+                { reg: '^(#|/)?切换主题\\s*(.+)$', fnc: 'switchTheme' },
+                { reg: '^(#|/)?主题列表$', fnc: 'listThemes' }
             ]
         });
         this.autoCheckUpdate();
@@ -663,7 +1027,12 @@ export class HelpPlugin extends plugin {
         // 检查主题目录是否存在
         const themeDir = path.join(THEME_PATH, themeName);
         if (!fs.existsSync(themeDir)) {
-            await e.reply(`❌ 主题 "${themeName}" 不存在！\n可用主题：default, none, demo, cute`);
+            const available = scanThemes();
+            await e.reply(
+                `❌ 主题 "${themeName}" 不存在！\n` +
+                `可用主题：${available.length ? available.join(', ') : '无'}\n` +
+                `💡 发送 #主题列表 可查看所有主题预览`
+            );
             return true;
         }
         
@@ -702,6 +1071,43 @@ export class HelpPlugin extends plugin {
             await e.reply(`❌ 切换主题失败：${error.message}`);
         }
         
+        return true;
+    }
+
+    /**
+     * 展示主题列表（以图片形式）
+     */
+    async listThemes(e) {
+        const themes = scanThemes();
+        if (themes.length === 0) {
+            await e.reply("❌ 未找到任何可用主题，请检查 theme 目录。");
+            return true;
+        }
+
+        await e.reply(`🎨 正在生成主题列表预览（共 ${themes.length} 个主题）...\n首次渲染需逐个生成预览，请稍候`);
+
+        try {
+            const result = await renderThemeGallery();
+            if (result) {
+                await e.reply(segment.image(result));
+            } else {
+                // 降级：图片渲染失败就回退成文本
+                const cfg = resources.getConfig();
+                const current = cfg.themes || 'default';
+                const lines = themes.map(name =>
+                    name === current ? `● ${name} （当前）` : `○ ${name}`
+                );
+                await e.reply(
+                    `⚠️ 预览图生成失败，以下是主题列表：\n` +
+                    lines.join('\n') +
+                    `\n\n使用 #切换主题 <名称> 切换`
+                );
+            }
+        } catch (err) {
+            logger.error('[Help-Plugin] 生成主题列表失败:', err);
+            await e.reply(`❌ 生成主题列表失败：${err.message}`);
+        }
+
         return true;
     }
 }
