@@ -727,7 +727,7 @@ export class HelpPlugin extends plugin {
             priority: 5,
             rule: [
                 { reg: '^(#|/)?(帮助|菜单|help)$', fnc: 'showHelp' },
-                { reg: '^(#|/)?(刷新|重载)帮助$', fnc: 'refreshHelp' },
+                { reg: '^(#|/)?(刷新|重载)帮助$', fnc: 'refreshHelp', permission: 'master' },
                 { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp', permission: 'master' },
                 { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp', permission: 'master' },
                 { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp', permission: 'master' },
