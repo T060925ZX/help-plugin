@@ -728,11 +728,11 @@ export class HelpPlugin extends plugin {
             rule: [
                 { reg: '^(#|/)?(帮助|菜单|help)$', fnc: 'showHelp' },
                 { reg: '^(#|/)?(刷新|重载)帮助$', fnc: 'refreshHelp' },
-                { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp' },
-                { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp' },
-                { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp' },
-                { reg: '^(#|/)?切换主题\\s*(.+)$', fnc: 'switchTheme' },
-                { reg: '^(#|/)?主题列表$', fnc: 'listThemes' }
+                { reg: '^(#|/)?帮助更新$', fnc: 'updateHelp', permission: 'master' },
+                { reg: '^(#|/)?同步喵喵$', fnc: 'syncMiaoMiaoHelp', permission: 'master' },
+                { reg: '^(#|/)?重置帮助$', fnc: 'resetHelp', permission: 'master' },
+                { reg: '^(#|/)?切换主题\\s*(.+)$', fnc: 'switchTheme', permission: 'master' },
+                { reg: '^(#|/)?主题列表$', fnc: 'listThemes', permission: 'master' }
             ]
         });
         this.autoCheckUpdate();
